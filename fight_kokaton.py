@@ -186,6 +186,27 @@ class Explosion:
                 self.img = pg.transform.flip(self.img, -1, -1)
             screen.blit(self.img, self.img_rct)
 
+class Score:
+    """
+    スコアに関するクラス
+    """
+    def __init__(self, color: tuple[int, int, int],):
+        """
+        引数color:スコアの色
+        """
+        self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.color = (0,0,255)
+        self.score = 0
+        self.img = self.fonto.render("スコア",0,color)
+        self.score_rct = self.img.get_rect()
+        self.score_rct.center = 100, (HEIGHT - 50)
+
+    def update(self, screen: pg.Surface):
+        """
+        引数screen:Surface
+        """
+        self.imgscore = self.fonto.render("スコア:" + str(self.score), 0, (255,0,0))
+        screen.blit(self.imgscore, self.score_rct)
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -201,6 +222,10 @@ def main():
     explosions = []
 
     clock = pg.time.Clock()
+    
+    #スコアの色
+    score = Score((0,255,0))
+    
     tmr = 0
     while True:
         for event in pg.event.get():
@@ -233,12 +258,18 @@ def main():
                     #explosionインスタンスの生成
                     explosion = Explosion(bomb)
                     explosions.append(explosion)
+                    #スコアを１加算
+                    score.score += 1
 
                     bird.change_img(6, screen)
                     pg.display.update()
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
+
+        #スコアのアップデート
+        score.update(screen=screen)
+
         # beam.update(screen)
         bombs = [bomb for bomb in bombs if bomb is not None]
         for bomb in bombs:
