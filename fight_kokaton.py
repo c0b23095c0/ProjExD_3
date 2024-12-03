@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import sys
@@ -57,6 +58,10 @@ class Bird:
         self.rct: pg.Rect = self.img.get_rect()
         self.rct.center = xy
 
+        #こうかとんの向きを表す
+        self.dire = (+5, 0)
+        #ここまで変更点
+
     def change_img(self, num: int, screen: pg.Surface):
         """
         こうかとん画像を切り替え，画面に転送する
@@ -82,6 +87,11 @@ class Bird:
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.img = __class__.imgs[tuple(sum_mv)]
+            self.dire = sum_mv
+        
+        #sum_mvが[0,0]でなければ、self.direをsum_mvで更新
+        #if sum_mv is not [0, 0]:
+        #ここまで変更点
         screen.blit(self.img, self.rct)
 
 
@@ -96,9 +106,20 @@ class Beam:
         """
         self.img = pg.image.load(f"fig/beam.png")
         self.rct = self.img.get_rect()
-        self.rct.centery = bird.rct.centery #こうかとんの中心縦座標
-        self.rct.left = bird.rct.right
-        self.vx, self.vy = +5, 0
+
+        #vx,vyにこうかとんが向いている方向を代入
+        self.vx = bird.dire[0]
+        self.vy = bird.dire[1]
+
+        ata = math.atan2(-self.vy, self.vx)
+        deg = math.degrees(ata)
+        #こうかとんの向きでビームの向きを回転
+        self.rotoimg = pg.transform.rotozoom(self.img, deg, 1)
+        #ビームの初期位置の調整
+        self.rct.centery = bird.rct.centery + (bird.rct.height * self.vy / 5)
+        self.rct.centerx = bird.rct.centerx + (bird.rct.width * self.vx / 5)
+        #self.vx, self.vy = +5, 0
+        #ここまで変更点
 
     def update(self, screen: pg.Surface):
         """
@@ -107,7 +128,7 @@ class Beam:
         """
         if check_bound(self.rct) == (True, True):
             self.rct.move_ip(self.vx, self.vy)
-            screen.blit(self.img, self.rct)    
+            screen.blit(self.rotoimg, self.rct)    
 
 
 class Bomb:
